@@ -1,53 +1,23 @@
-﻿using System;
-using System.Drawing;
-using System.Linq;
-using AsteroidGamePrototypeApp.exceptions;
-using AsteroidGamePrototypeApp.objects;
+﻿using System.Drawing;
 
 namespace AsteroidGamePrototypeApp
 {
-    public class Bullet : SpaceObject, IInteracting
+    public class Bullet : DestructableObject
     {
         private IInteracting _clashedObject;
-        private static Random _random = new Random();
+        private readonly int _damage;
+        
 
-        public Bullet(Point pos, Point dir, Func<Graphics> graphicsSupplier,
-            Func<Rectangle> surfaceBoundsSupplier) :
-            base(pos, dir, new Size(10, 2), graphicsSupplier, surfaceBoundsSupplier)
+        public Bullet(Point pos, Point dir, IGameContext gameContext, GameEvents.DestructEvent destructEvent, int damage) :
+            base(pos, dir, new Size(10, 2), gameContext,destructEvent)
         {
+            _damage = damage;
         }
 
         public override void Update()
         {
-            if (IsOutOfSurface())
-            {
-                Rebirth();
-            }
-
             Pos.X += Dir.X;
-            foreach (var obj in NearestObjects.Where(IntersectsWith))
-            {
-                switch (obj)
-                {
-                    case IInteracting interacting:
-                        Clash(interacting);
-                        break;
-                    case Star _:
-                        throw new StarIsKilledException("OHH NO!!! Star is killed!!!!");
-                }
-            }
-        }
-
-        private bool IsOutOfSurface()
-        {
-            return Pos.X + Size.Width >= SurfaceBounds.Width;
-        }
-
-        private void Rebirth()
-        {
-            Pos.Y = _random.Next(10, SurfaceBounds.Height - 10);
-            Pos.X = 0;
-            Dir.X = _random.Next(10, 30);
+            base.Update();
         }
 
         public override void Draw()
@@ -55,13 +25,23 @@ namespace AsteroidGamePrototypeApp
             Graphics.DrawRectangle(new Pen(Color.Aqua), Pos.X, Pos.Y, Size.Width, Size.Height);
         }
 
-        public void Clash(IInteracting obj)
+        public override void Clash(IInteracting obj)
         {
             if (_clashedObject == obj) return;
             _clashedObject = obj;
             obj.Clash(this);
             _clashedObject = null;
-            Rebirth();
+            Destruct();
+        }
+
+        public override int GetDamage()
+        {
+            return _damage;
+        }
+
+        protected override bool IsOutOfSurface()
+        {
+            return Pos.X + Size.Width >= SurfaceBounds.Width;
         }
     }
 }

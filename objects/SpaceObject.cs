@@ -12,20 +12,18 @@ namespace AsteroidGamePrototypeApp
         protected Point Pos;
         protected Point Dir;
         protected Size Size;
-        protected readonly Func<Graphics> GraphicsSupplier;
-        protected readonly Func<Rectangle> SurfaceBoundsSupplier;
+        protected readonly IGameContext _gameContext;
 
-        protected Graphics Graphics => GraphicsSupplier.Invoke();
-        protected Rectangle SurfaceBounds => SurfaceBoundsSupplier.Invoke();
+        protected Graphics Graphics => _gameContext.GetGraphics();
+        protected Rectangle SurfaceBounds => _gameContext.GetBounds();
 
-        protected SpaceObject(Point pos, Point dir, Size size, Func<Graphics> graphicsSupplier, Func<Rectangle> surfaceBoundsSupplier)
+        protected SpaceObject(Point pos, Point dir, Size size, IGameContext gameContext)
         {
             Id = _idInc++;
             Pos = pos;
             Dir = dir;
             Size = size;
-            GraphicsSupplier = graphicsSupplier;
-            SurfaceBoundsSupplier = surfaceBoundsSupplier;
+            _gameContext = gameContext;
         }
 
         public override void Draw()

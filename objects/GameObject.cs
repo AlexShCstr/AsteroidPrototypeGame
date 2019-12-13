@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 
 namespace AsteroidGamePrototypeApp
 {
-    public abstract class GameObject : IDrawable,IBoundObject
+    public abstract class GameObject : IDrawable, IBoundObject
     {
-        protected List<GameObject> NearestObjects;
+        public delegate void Log(String message);
 
-        protected GameObject()
-        {
-            NearestObjects=new List<GameObject>();
-        }
+        private Log _logger;
 
         public abstract void Draw();
 
@@ -19,25 +15,33 @@ namespace AsteroidGamePrototypeApp
 
         public abstract Rectangle GetBounds();
 
-        public bool IntersectsWith(GameObject gameObject)
+        public virtual int GetPoints()
         {
-            var bounds = gameObject.GetBounds();
-            var rect = GetBounds();
-            if (bounds.X <= rect.X + rect.Width && rect.X <= bounds.X + bounds.Width && bounds.Y <= rect.Y + rect.Height)
-                return rect.Y <= bounds.Y + bounds.Height;
-            return false;
+            return 0;
         }
 
-        public void SetNearestObjects(List<GameObject> objects)
+        public Log log
         {
-            if (objects == null) throw new ArgumentNullException(nameof(objects));
-            if (NearestObjects == null)
+            get
             {
-                NearestObjects = new List<GameObject>();
+                return _logger!=null?_logger:message => { };
+            }
+            set { _logger = value; }
+        }
+
+        protected bool CollisionsWith(GameObject gameObject)
+        {
+            if (gameObject == this)
+            {
+                return false;
             }
 
-            NearestObjects.Clear();
-            NearestObjects.AddRange(objects);
+            var bounds = gameObject.GetBounds();
+            var rect = GetBounds();
+            if (bounds.X <= rect.X + rect.Width && rect.X <= bounds.X + bounds.Width &&
+                bounds.Y <= rect.Y + rect.Height)
+                return rect.Y <= bounds.Y + bounds.Height;
+            return false;
         }
     }
 }

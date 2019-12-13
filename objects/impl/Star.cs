@@ -5,8 +5,7 @@ namespace AsteroidGamePrototypeApp.objects
 {
     public class Star : SpaceObject
     {
-        public Star(Point pos, Point dir, Size size, Func<Graphics> graphicsSupplier,
-            Func<Rectangle> surfaceBoundsSupplier) : base(pos, dir, size, graphicsSupplier,surfaceBoundsSupplier)
+        public Star(Point pos, Point dir, Size size, IGameContext gameContext) : base(pos, dir, size, gameContext)
         {
         }
 

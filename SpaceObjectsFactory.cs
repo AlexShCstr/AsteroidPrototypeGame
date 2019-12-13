@@ -7,31 +7,28 @@ namespace AsteroidGamePrototypeApp
     internal static class SpaceObjectsFactory
     {
         private static readonly Random Random = new Random();
-        private static Bullet _bullet;
 
-        public static GameObject Create(Point position, Func<Graphics> graphicsSupplier,
-            Func<Rectangle> surfaceBoundsSupplier)
+        public static GameObject CreateBurst(IGameContext gameContext, GameEvents.DestructEvent destructEvent)
+        {
+            return new MedicPack(new Point(gameContext.GetBounds().Width, RandomYPos()), new Point(10, 0), gameContext,
+                destructEvent);
+        }
+
+        public static GameObject Create(Point position, IGameContext gameContext, GameEvents.DestructEvent destructEvent)
         {
             var size = next();
-            if (_bullet == null)
-            {
-                _bullet = new Bullet(new Point(0, RandomYPos()), new Point(Random.Next(5, 10), 0), 
-                    graphicsSupplier,surfaceBoundsSupplier);
-                return _bullet;
-            }
-
             // Туманности должны быть довольно редкими
             if (Random.Next(0, 10) == 4)
                 return new Nebula(
                     RandomPoint(),
                     new Point(Random.Next(1, 3), 0),
-                    graphicsSupplier,surfaceBoundsSupplier);
+                    gameContext);
             var objectSize = new Size(size, size);
             return Random.Next(1, 3) switch
             {
-                1 => (SpaceObject) new SimpleAsteroid(position, new Point(-next(), -next()), objectSize, graphicsSupplier,surfaceBoundsSupplier),
-                2 => new Star(position, new Point(next(), 0), objectSize, graphicsSupplier,surfaceBoundsSupplier),
-                _ => new SimpleAsteroid(position, new Point(-next(), -next()), objectSize, graphicsSupplier,surfaceBoundsSupplier)
+                1 => (SpaceObject) new SimpleAsteroid(position, new Point(-next(), -next()), objectSize, gameContext,destructEvent),
+                2 => new Star(position, new Point(next(), 0), new Size(4,4), gameContext),
+                _ => new SimpleAsteroid(position, new Point(-next(), -next()), objectSize, gameContext,destructEvent)
             };
         }
 
@@ -52,7 +49,7 @@ namespace AsteroidGamePrototypeApp
 
         private static int next()
         {
-            return next(2, 10);
+            return next(10, 20);
         }
 
         private static int next(int start, int end)

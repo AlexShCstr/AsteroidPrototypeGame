@@ -7,9 +7,7 @@ namespace AsteroidGamePrototypeApp.objects
     {
         private static readonly Image ImageFile = Image.FromFile("nebula.png");
 
-        public Nebula(Point pos, Point dir, Func<Graphics> graphicsSupplier,
-            Func<Rectangle> surfaceBoundsSupplier) : base(pos, dir, Size.Empty,
-            graphicsSupplier, surfaceBoundsSupplier)
+        public Nebula(Point pos, Point dir, IGameContext gameContext) : base(pos, dir, Size.Empty, gameContext)
         {
         }
 
