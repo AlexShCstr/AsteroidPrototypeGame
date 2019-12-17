@@ -55,7 +55,7 @@ namespace AsteroidGamePrototypeApp
 
         private int CalcCurrentMovementSpeed()
         {
-            return 3;
+            return 6;
         }
 
         public void Down()

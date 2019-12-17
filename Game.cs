@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using AsteroidGamePrototypeApp.objects;
 
 namespace AsteroidGamePrototypeApp
 {
+    delegate void GameObjectDestroyEvent(GameObject gameobject);
+
     static class Game
     {
         private const int SpaceObjectsCount = 50;
@@ -27,7 +30,7 @@ namespace AsteroidGamePrototypeApp
 
         static Game()
         {
-            GameContext = new DefaultGameContext();
+            GameContext = new DefaultGameContext(GameObjectDestroyed);
         }
 
         private static void Load()
@@ -43,6 +46,7 @@ namespace AsteroidGamePrototypeApp
                     GameContext, GameObjectDestroyed));
                 gameObject.log = Console.WriteLine;
             }
+            GameContext.FillAsteroids();;
 
             _ship = (SpaceShip) GameContext.AddGameObject(new SpaceShip(new Point(10, 200), GameContext,
                 ShipDestroyedEvent));
@@ -158,7 +162,7 @@ namespace AsteroidGamePrototypeApp
         {
             switch (e.KeyCode)
             {
-                case Keys.ControlKey:
+                case Keys.Space:
                     GameContext.AddGameObject(_ship.Shoot(GameContext.RemoveGameObject));
                     break;
                 case Keys.Up:
@@ -173,13 +177,20 @@ namespace AsteroidGamePrototypeApp
 
     internal class DefaultGameContext : IGameContext
     {
+        private static int DefaultAsteroidsCount = 10;
+        private readonly GameObjectDestroyEvent _gameObjectDestroyEvent;
+        private int _currentLevel = 1;
         private List<GameObject> _gameObjects;
+        private List<GameObject> _asteroids;
         internal Graphics Graphics { set; get; }
+
         internal Rectangle Bounds { set; get; }
 
-        public DefaultGameContext()
+        public DefaultGameContext(GameObjectDestroyEvent gameObjectDestroyed)
         {
             _gameObjects = new List<GameObject>();
+            _asteroids = new List<GameObject>();
+            _gameObjectDestroyEvent = gameObjectDestroyed;
         }
 
         public Graphics GetGraphics()
@@ -194,7 +205,7 @@ namespace AsteroidGamePrototypeApp
 
         public IEnumerable<GameObject> GetAllObjects()
         {
-            return _gameObjects.ToImmutableList();
+            return _gameObjects.Concat(_asteroids).ToImmutableList();
         }
 
         public GameObject AddGameObject(GameObject gameObject)
@@ -203,9 +214,40 @@ namespace AsteroidGamePrototypeApp
             return gameObject;
         }
 
+        public GameObject AddAsteroid(GameObject gameObject)
+        {
+            _asteroids.Add(gameObject);
+            return gameObject;
+        }
+
         public void RemoveGameObject(GameObject gameObject)
         {
-            _gameObjects.Remove(gameObject);
+            if (!_gameObjects.Remove(gameObject))
+                _asteroids.Remove(gameObject);
+            if (_asteroids.Count == 0)
+            {
+                StartNextLevel();
+            }
+        }
+
+        private void StartNextLevel()
+        {
+            _currentLevel++;
+            FillAsteroids();
+        }
+
+        public void FillAsteroids()
+        {
+            for (var i = 0; i < DefaultAsteroidsCount + _currentLevel; i++)
+            {
+                AddAsteroid(SpaceObjectsFactory.CreateAsteroid(this, AsteroidDestoryed));
+            }
+        }
+
+        private void AsteroidDestoryed(GameObject gameobject)
+        {
+            RemoveGameObject(gameobject);
+            _gameObjectDestroyEvent(gameobject);
         }
     }
 }

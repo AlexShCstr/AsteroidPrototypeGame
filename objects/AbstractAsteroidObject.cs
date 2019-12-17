@@ -26,16 +26,6 @@ namespace AsteroidGamePrototypeApp
             }
         }
 
-        private bool IsNoFullEnergy()
-        {
-            return _energy < GetDefaultEnergyValue();
-        }
-
-        private int GetDefaultEnergyValue()
-        {
-            return Size.Height;
-        }
-
         public override void Update()
         {
             Pos.X += Dir.X;
@@ -87,6 +77,16 @@ namespace AsteroidGamePrototypeApp
         protected virtual int CalcDamage()
         {
             return _damage;
+        }
+
+        private bool IsNoFullEnergy()
+        {
+            return _energy < GetDefaultEnergyValue();
+        }
+
+        private int GetDefaultEnergyValue()
+        {
+            return Size.Height;
         }
     }
 }
